@@ -2,22 +2,24 @@ package HireADriver;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 @WebServlet("/CustomerLoginServlet")
 public class CustomerLoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    // If servlet accessed directly
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.sendRedirect("customerLogin.jsp");
+    }
+
+    // Login logic
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -26,17 +28,14 @@ public class CustomerLoginServlet extends HttpServlet {
 
         try {
 
-            // Load MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            // Connect database
             Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/javaproject1",
                     "root",
                     "root");
 
-            // Check login
-            String sql = "SELECT full_name FROM customers WHERE email=? AND password=?";
+            String sql = "SELECT * FROM customers WHERE email=? AND password=?";
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, email);
@@ -46,38 +45,26 @@ public class CustomerLoginServlet extends HttpServlet {
 
             if (rs.next()) {
 
-                // Get customer name
-                String fullName = rs.getString("full_name");
-
-                // Create session
+                // create session
                 HttpSession session = request.getSession();
 
-                // Store data in session
-                session.setAttribute("username", fullName);
-                session.setAttribute("email", email);
+                session.setAttribute("username", rs.getString("name"));
+                session.setAttribute("email", rs.getString("email"));
+                session.setAttribute("phone", rs.getString("phone"));
 
-                // Redirect to dashboard
-                response.sendRedirect("customerdashboard.jsp");
+                // go to dashboard
+                response.sendRedirect("customerDashboard.jsp");
 
             } else {
 
-                response.getWriter().println("<h3 style='color:red;'>Invalid Email or Password</h3>");
-
+                // login failed
+                response.sendRedirect("customerLogin.jsp?error=1");
             }
 
             conn.close();
 
         } catch (Exception e) {
-
             e.printStackTrace();
-            response.getWriter().println("<h3 style='color:red;'>Database Error</h3>");
-
         }
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        response.sendRedirect("customerLogin.jsp");
     }
 }
