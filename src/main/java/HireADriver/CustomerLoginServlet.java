@@ -25,43 +25,59 @@ public class CustomerLoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         try {
-            // Load MySQL Driver
+
+            // Load MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            // Connect to Database (root password = root)
+            // Connect database
             Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/javaproject1",
                     "root",
                     "root");
 
-            String sql = "SELECT * FROM customers WHERE email=? AND password=?";
+            // Check login
+            String sql = "SELECT full_name FROM customers WHERE email=? AND password=?";
             PreparedStatement ps = conn.prepareStatement(sql);
+
             ps.setString(1, email);
             ps.setString(2, password);
 
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                // Store customer name in session
+
+                // Get customer name
+                String fullName = rs.getString("full_name");
+
+                // Create session
                 HttpSession session = request.getSession();
-                session.setAttribute("user", rs.getString("full_name"));
+
+                // Store data in session
+                session.setAttribute("username", fullName);
+                session.setAttribute("email", email);
 
                 // Redirect to dashboard
-                response.sendRedirect(request.getContextPath() + "/customerdashboard.jsp");
+                response.sendRedirect("customerdashboard.jsp");
+
             } else {
-                response.getWriter().println("Invalid Email or Password");
+
+                response.getWriter().println("<h3 style='color:red;'>Invalid Email or Password</h3>");
+
             }
 
             conn.close();
 
         } catch (Exception e) {
+
             e.printStackTrace();
-            response.getWriter().println("Database connection error: " + e.getMessage());
+            response.getWriter().println("<h3 style='color:red;'>Database Error</h3>");
+
         }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         response.sendRedirect("customerLogin.jsp");
     }
 }
