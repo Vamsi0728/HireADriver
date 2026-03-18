@@ -1,11 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+pageEncoding="UTF-8"%>
 
 <%
 String username = (String) session.getAttribute("username");
+String email = (String) session.getAttribute("email");
 
-if (username == null) {
-	response.sendRedirect("customerLogin.jsp");
+if(username == null || email == null){
+    response.sendRedirect("customerLogin.jsp");
 }
 %>
 
@@ -102,17 +103,9 @@ text-decoration:none;
 font-weight:bold;
 }
 
-.drivers{
-background:#3498db;
-}
-
-.trips{
-background:#9b59b6;
-}
-
-.payments{
-background:#e67e22;
-}
+.drivers{background:#3498db;}
+.trips{background:#9b59b6;}
+.payments{background:#e67e22;}
 
 </style>
 
@@ -134,13 +127,11 @@ background:#e67e22;
 
 </div>
 
-
 <div class="container">
 
 <div class="welcome">
 <h2>Welcome, <%=username%></h2>
 </div>
-
 
 <div class="booking-box">
 
@@ -149,11 +140,9 @@ background:#e67e22;
 <form action="BookingServlet" method="post">
 
 <select name="vehicleType" required>
-
 <option value="">Select Vehicle Type</option>
 <option value="Car">Car</option>
 <option value="Bike">Bike</option>
-
 </select>
 
 <input type="text" name="pickup" placeholder="Pickup Location" required>
@@ -161,14 +150,11 @@ background:#e67e22;
 <input type="text" name="drop" placeholder="Drop Location" required>
 
 <select name="bookingType">
-
 <option value="instant">Instant Booking</option>
 <option value="schedule">Schedule Booking</option>
-
 </select>
 
 <input type="date" name="date">
-
 <input type="time" name="time">
 
 <button class="btn">Book Driver</button>
@@ -176,7 +162,6 @@ background:#e67e22;
 </form>
 
 </div>
-
 
 <div class="actions">
 

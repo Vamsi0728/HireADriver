@@ -17,22 +17,28 @@ public class ViewTripsServlet extends HttpServlet {
         ArrayList<Trip> tripList = new ArrayList<>();
 
         try {
-
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/javaproject1",
+                    "jdbc:mysql://localhost:3306/javaproject1?useSSL=false&serverTimezone=UTC",
                     "root",
                     "root");
 
-            String sql = "SELECT pickup, drop_location, booking_date, booking_time, amount FROM bookings";
+            HttpSession session = request.getSession();
+            String email = (String) session.getAttribute("email");
 
+            if (email == null) {
+                response.sendRedirect("customerLogin.jsp");
+                return;
+            }
+
+            String sql = "SELECT pickup, drop_location, booking_date, booking_time, amount FROM bookings WHERE customer_email=?";
             PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, email);
 
             ResultSet rs = ps.executeQuery();
 
-            while(rs.next()){
-
+            while (rs.next()) {
                 Trip t = new Trip(
                         rs.getString("pickup"),
                         rs.getString("drop_location"),
@@ -40,17 +46,20 @@ public class ViewTripsServlet extends HttpServlet {
                         rs.getString("booking_time"),
                         rs.getDouble("amount")
                 );
-
                 tripList.add(t);
             }
 
             request.setAttribute("tripList", tripList);
-
             RequestDispatcher rd = request.getRequestDispatcher("viewTrips.jsp");
             rd.forward(request, response);
 
-        } catch(Exception e){
+            rs.close();
+            ps.close();
+            con.close();
+
+        } catch (Exception e) {
             e.printStackTrace();
+            response.getWriter().println("Error: " + e.getMessage());
         }
     }
 }

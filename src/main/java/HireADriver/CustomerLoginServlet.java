@@ -12,14 +12,6 @@ public class CustomerLoginServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    // If servlet accessed directly
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        response.sendRedirect("customerLogin.jsp");
-    }
-
-    // Login logic
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -27,15 +19,15 @@ public class CustomerLoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         try {
-
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/javaproject1",
+                    "jdbc:mysql://localhost:3306/javaproject1?useSSL=false&serverTimezone=UTC",
                     "root",
                     "root");
 
-            String sql = "SELECT * FROM customers WHERE email=? AND password=?";
+            // ✅ FIXED HERE
+            String sql = "SELECT name FROM customers WHERE email=? AND password=?";
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ps.setString(1, email);
@@ -45,26 +37,34 @@ public class CustomerLoginServlet extends HttpServlet {
 
             if (rs.next()) {
 
-                // create session
+                // ✅ FIXED HERE
+                String name = rs.getString("name");
+
                 HttpSession session = request.getSession();
+                session.setAttribute("username", name);
+                session.setAttribute("email", email);
 
-                session.setAttribute("username", rs.getString("name"));
-                session.setAttribute("email", rs.getString("email"));
-                session.setAttribute("phone", rs.getString("phone"));
-
-                // go to dashboard
-                response.sendRedirect("customerDashboard.jsp");
+                response.sendRedirect("customerdashboard.jsp");
 
             } else {
-
-                // login failed
-                response.sendRedirect("customerLogin.jsp?error=1");
+                response.getWriter().println("<h3 style='color:red;'>Invalid Email or Password</h3>");
             }
 
+            rs.close();
+            ps.close();
             conn.close();
 
         } catch (Exception e) {
             e.printStackTrace();
+
+            // 🔥 Show real error if anything else fails
+            response.getWriter().println("<h3 style='color:red;'>Error: " + e.getMessage() + "</h3>");
         }
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.sendRedirect("customerLogin.jsp");
     }
 }
