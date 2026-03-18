@@ -106,7 +106,7 @@ if(list != null){
 
 </table>
 
-<a href="customerDashboard.jsp" class="backBtn">Back</a>
+<a href="customerdashboard.jsp" class="backBtn">Back</a>
 
 </div>
 
